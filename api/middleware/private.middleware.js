@@ -1,7 +1,7 @@
 
 
-const jwt = require('jsonwebtoken')
-const failResponse = require('../response/fail.response');
+const jwt = require('jsonwebtoken');
+const { failResponse } = require('../response/fail.response');
 
 
 function authenticateToken(req, res, next) {
@@ -25,7 +25,6 @@ function authenticateToken(req, res, next) {
         }
 
         req.user_uid = userUid
-
         next();
     });
 }

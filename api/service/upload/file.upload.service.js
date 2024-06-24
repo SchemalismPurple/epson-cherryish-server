@@ -3,8 +3,8 @@
 
 
 
-class FileService {
-
+class FileUploadService {
+    
 }
 
-module.exports = new FileService()
+module.exports = new FileUploadService()

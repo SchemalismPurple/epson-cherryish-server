@@ -1,5 +1,3 @@
-const UserModel = require('../../model/user.model');
-const { timestamp } = require('../../utils/date.helper');
 const { failResponse } = require('./fail.response');
 
 
@@ -14,34 +12,22 @@ const { failResponse } = require('./fail.response');
  */
 async function successResponse(req, res, code, result, contents) {
     try {
+        console.log("TTT")
         const payload = {
             result: result,
             content: contents
         }
+        console.log("YYY, ",payload)
+        console.log("@@@,",code)
 
-        if (req.service_type) {
-            if (req.user_uid) {
-                const user = await UserModel.update({userUid: req.user_uid, updateData: {updated_time: timestamp()}})
-                payload["user"] = user
-            }
+        return res
+            .status(code)
+            .send(payload);
 
-            return res
-                .status(code)
-                .send(payload);
-        }
-        else {
-            if (req.user_uid) {
-                const user = await UserModel.update({userUid: req.user_uid, updateData: {updated_time: timestamp()}})
-                payload["user"] = user
-            }
-
-            return res
-                .status(code)
-                .send(payload);
-        }
     } catch (error) {
+        console.log(error)
         return failResponse(req, res, 500, "unknown", error)
     }
 }
 
-module.exports = successResponse
+module.exports = {successResponse}

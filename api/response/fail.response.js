@@ -8,6 +8,12 @@
  * @returns 
  */
 function failResponse(req, res, code, reason, message) {
+    if (res.headersSent) {
+        // 응답이 이미 보내진 경우에는 로그만 남기고 함수 종료
+        console.log("Headers already sent.");
+        return;
+    }
+
     return res
         .status(code)
         .send({
@@ -18,4 +24,4 @@ function failResponse(req, res, code, reason, message) {
 }
 
 
-module.exports = failResponse
+module.exports = {failResponse}

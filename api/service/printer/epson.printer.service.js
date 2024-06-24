@@ -4,10 +4,10 @@ const querystring = require("querystring");
 const fs = require('fs')
 
 
-const BASE_URL = "https://api.epsonconnect.com";
-const DEVICE = "cherryish@print.epsonconnect.com";
-const CLIENT_ID = "b102680703994db39bc174b84b4558e8";
-const CLIENT_SECRET = "G8PbkXFKqYGb5rWrKEr6ZXNGKfiTAJw2NhLEvUIG18KY1gl7JqVQvlxYyIL8K0do";
+const BASE_URL = process.env.EPSON_BASE_URL;
+const DEVICE = process.env.EPSON_DEVICE;
+const CLIENT_ID = process.env.EPSON_CLIENT_ID;
+const CLIENT_SECRET = process.env.EPSON_CLIENT_SECRET;
 let cachedToken = null;
 let tokenExpiryTime = null;
 
@@ -42,7 +42,7 @@ class EpsonPrinterService {
 
             if (response.data.access_token) {
                 console.log(response.data)
-                return response.data.access_token
+                return response.data
             }
             else {
                 return undefined
@@ -62,8 +62,16 @@ class EpsonPrinterService {
         const jobUri = `${BASE_URL}/api/1/printing/printers/${subject_id}/jobs`;
 
         const dataParam = {
-            job_name: 'SampleJob1',
+            job_name: 'JOB13',
             print_mode: 'photo',
+            print_setting: {
+                "media_size": "ms_kg",
+                "media_type": "mt_photopaper",
+                "source": "rear",
+                "color_mode": "color",
+                "print_quality": "high",
+                "borderless": true
+            }
         };
 
         const headers = {
@@ -88,8 +96,6 @@ class EpsonPrinterService {
     // --------------------------------------------------------------------------------
     // 3. Upload print file
     async uploadPrintFile(uploadUri, localFilePath) {
-
-
         const headers = {
             'Content-Type': 'image/jpeg',
             'Content-Length': `${fs.statSync(localFilePath).size}`
@@ -110,12 +116,12 @@ class EpsonPrinterService {
     // 4. Execute print
     async executePrint(subject_id, job_id, access_token) {
         const printUri = `${BASE_URL}/api/1/printing/printers/${subject_id}/jobs/${job_id}/print`;
-
+    
         const headers = {
             Authorization: `Bearer ${access_token}`,
             'Content-Type': 'application/json;charset=utf-8',
         };
-
+    
         try {
             const response = await axios.post(printUri, {}, { headers });
             console.log('4. Execute print: ----------------------------------');
@@ -126,54 +132,52 @@ class EpsonPrinterService {
             console.error('Error executing print:', error.response ? error.response.data : error.message);
         }
     }
+    
+    async getPrinter(subject_id, access_token){
+        const printUri = `${BASE_URL}/api/1/printing/printers/${subject_id}/capability/photo`;
+
+        const headers = {
+            Authorization: `Bearer ${access_token}`,
+            'Content-Type': 'application/json;charset=utf-8',
+        };
+
+        try {
+            const response = await axios.get(printUri, { headers });
+            // console.log(response.data.media_sizes)
+            response.data.media_sizes.forEach(size =>{
+                console.log("------------")
+                console.log(size)
+                
+                size.media_types.forEach(type => {
+                    type.forEach(ele => {
+                        
+                    })
+                    console.log(type)
+                })
+            })
+        } catch (error) {
+            console.error('Error executing print:', error.response ? error.response.data : error.message);
+        }
+    }
 
     async requestPrint() {
-        try {
-            const subject_id = "ebdd3da361d146c9bf6b791e1c916ad1"; 
-            const access_token = 's817KoEUZYVJKXgdVnhWMAkfKuAZr17hEBdimUOudr1ax5DSrrl9AHps2mM0ttHi'; 
-            const localFilePath = './fff.jpeg'; 
+        try 
+        {const token = await new EpsonPrinterService().getToken()
+            const subject_id = token.subject_id
+            const access_token = token.access_token
+            const localFilePath = './a.jpeg'; 
     
-            const printJobData = await createPrintJob(subject_id, access_token);
+            const printJobData = await this.createPrintJob(subject_id, access_token);
             const job_id = printJobData.id;
             const base_uri = printJobData.upload_uri;
-            console.log("------")
-            console.log(printJobData)
-            console.log(base_uri)
-            console.log("------")
-            const uploadUri = `${base_uri}&File=${encodeURIComponent('1.jpeg')}`;
-            console.log(uploadUri)
-            await uploadPrintFile(uploadUri, localFilePath);
-            await executePrint(subject_id, job_id, access_token);
+            const uploadUri = `${base_uri}&File=${encodeURIComponent('a.jpeg')}`;
+            await this.uploadPrintFile(uploadUri, localFilePath);
+            await this.executePrint(subject_id, job_id, access_token);
         }
         catch (error){
             throw error
         }
-
     }
 }
 
 module.exports = new EpsonPrinterService()
-
-// (async () => {
-//     const subject_id = "ebdd3da361d146c9bf6b791e1c916ad1"; // subject_id 설정
-//     // const access_token = await getToken()
-//     const access_token = 's817KoEUZYVJKXgdVnhWMAkfKuAZr17hEBdimUOudr1ax5DSrrl9AHps2mM0ttHi'; // access_token 설정
-//     const localFilePath = './fff.jpeg'; // 업로드할 파일 경로
-
-//     const printJobData = await createPrintJob(subject_id, access_token);
-//     const job_id = printJobData.id;
-//     const base_uri = printJobData.upload_uri;
-//     console.log("------")
-//     console.log(printJobData)
-//     console.log(base_uri)
-//     console.log("------")
-//     const uploadUri = `${base_uri}&File=${encodeURIComponent('1.jpeg')}`;
-//     console.log(uploadUri)
-
-
-//     await uploadPrintFile(uploadUri, localFilePath);
-
-
-
-//     await executePrint(subject_id, job_id, access_token);
-// })();

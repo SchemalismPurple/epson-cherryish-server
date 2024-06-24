@@ -7,6 +7,8 @@ global.atob = require("atob"); // prisma 모듈에서 충돌나는 경우가 가
 
 
 
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 app.use(cors());
 app.use(json());

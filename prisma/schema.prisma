@@ -13,10 +13,77 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model partner_user {
+  uid         Int     @id @default(autoincrement())
+  name        Int
+  social_type String
+  social_id   String
+  fcm_token   String?
+  birth       String?
+  phone       String? @unique
+  email       String  @unique
+}
 
+model mobile_user {
+  uid         Int     @id @default(autoincrement())
+  name        String
+  social_type String
+  social_id   String
+  fcm_token   String?
+  birth       String?
+  phone       String? @unique
+  email       String  @unique
+  device      String
+  os          String
+  os_version  String
+}
 
+model photo_template {
+  uid                String  @id @unique
+  title              String
+  sub_title          String
+  latitude           Float
+  longitude          Float
+  zoom               Float
+  address            String
+  original_image_filepath String
+  thumbnail_image_filepath String
+  open_time          Int
+  close_time         Int
+  cost               Int?
+  created_time       Int
+  updated_time       Int
+  like_count         Int
+  description        String
+  enable             Boolean
+}
 
-model user {
-  id Int @id @default(autoincrement())
+model photo_layout {
+  uid                 String @id @unique
+  photo_template_uid  String
+  width               Int
+  height              Int
+  background_color    String
+  original_image_filepath String
+  thumbnail_image_filepath String
+}
 
+model photo_filter {
+  uid                String  @id @unique
+  photo_template_uid String
+  photo_layout_uid   String
+  x                  Int
+  y                  Int
+  width              Int
+  height             Int
+  original_image_filepath String
+  thumbnail_image_filepath String
+}
+
+model photo_product {
+  uid String @id @unique
+  photo_template_uid String
+  user_uid Int
+  original_image_filepath String
+  thumbnail_image_filepath String
 }
